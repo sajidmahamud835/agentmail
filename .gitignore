@@ -1,0 +1,10 @@
+.env
+.env.*
+!.env.example
+runtime/
+backups/
+node_modules/
+*.log
+*.pem
+*.key
+.DS_Store

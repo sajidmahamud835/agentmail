@@ -1,0 +1,99 @@
+name: agentpost
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-postal: &postal
+  image: ghcr.io/postalserver/postal:3.3.7
+  network_mode: host
+  volumes:
+    - ./runtime/postal:/config:ro
+  restart: unless-stopped
+  logging: *logging
+  depends_on:
+    database:
+      condition: service_healthy
+
+services:
+  database:
+    image: mariadb:11.4.13
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Run the installer first}
+    command: ["--innodb-log-file-size=256M", "--max-allowed-packet=64M"]
+    ports:
+      - "127.0.0.1:3306:3306"
+    volumes:
+      - ./runtime/database:/var/lib/mysql
+      - ./runtime/database-init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+    logging: *logging
+
+  web:
+    <<: *postal
+    command: ["postal", "web-server"]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:5000/login"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  smtp:
+    <<: *postal
+    command: ["postal", "smtp-server"]
+    cap_add: [NET_BIND_SERVICE]
+
+  worker:
+    <<: *postal
+    command: ["postal", "worker"]
+
+  runner:
+    <<: *postal
+    profiles: [tools]
+    restart: "no"
+    command: ["postal"]
+
+  inbox:
+    image: node:22.23.3-bookworm-slim
+    user: "1000:1000"
+    network_mode: host
+    working_dir: /app
+    command: ["node", "src/inbox.mjs"]
+    environment:
+      INBOX_CONFIG: /config/inboxes.json
+      POSTAL_PUBLIC_KEY: /config/signing.pub
+      INBOX_DATABASE: /data/inbox.sqlite
+      INBOX_BIND: 127.0.0.1
+      INBOX_PORT: "8025"
+    volumes:
+      - ./src:/app/src:ro
+      - ./runtime/inbox-config:/config:ro
+      - ./runtime/inbox:/data
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8025/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    logging: *logging
+
+  caddy:
+    image: caddy:2.11.7-alpine
+    network_mode: host
+    volumes:
+      - ./runtime/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./runtime/caddy/data:/data
+      - ./runtime/caddy/config:/config
+    restart: unless-stopped
+    logging: *logging
