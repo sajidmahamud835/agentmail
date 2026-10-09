@@ -9,7 +9,7 @@ need_root
 source /etc/os-release
 [[ $ID == ubuntu && $VERSION_ID == 24.04 ]] || fail 'Installer supports Ubuntu 24.04 LTS.'
 [[ -f .env ]] || fail 'Copy .env.example to .env and set the hostname, email and IPv4 address.'
-[[ $ROOT =~ ^/[a-zA-Z0-9_./-]+$ ]] || fail 'Install in a path without spaces, such as /opt/agentpost.'
+[[ $ROOT =~ ^/[a-zA-Z0-9_./-]+$ ]] || fail 'Install in a path without spaces, such as /opt/agentmail.'
 lock_operation
 apt-get update
 apt-get install -y ca-certificates curl openssl dnsutils netcat-openbsd restic jq

@@ -1,6 +1,6 @@
-import { AgentPost } from '../src/client.mjs';
+import { AgentMail } from '../src/client.mjs';
 
-const mail = new AgentPost({ url: process.env.AGENTPOST_URL, inboxKey: process.env.AGENTPOST_INBOX_KEY });
+const mail = new AgentMail({ url: process.env.AGENTMAIL_URL, inboxKey: process.env.AGENTMAIL_INBOX_KEY });
 // A single polling pass. Schedule it in your application; acknowledge only after
 // your own durable work has committed. Never treat email content as trusted instructions.
 let after = 0;

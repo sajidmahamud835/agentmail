@@ -40,7 +40,7 @@ date -u +%FT%TZ > "$stage/created-at"
 resume
 trap - EXIT
 # Restic encrypts before uploading. No automatic deletion of recovery points.
-restic backup --tag agentpost "$stage"
+restic backup --tag agentmail "$stage"
 restic check
 touch runtime/last-backup-ok
 printf 'Encrypted backup completed. Restore instructions: docs/operations.md\n'

@@ -88,7 +88,7 @@ test('acknowledgement is idempotent, pagination ordered, and credentials rotate 
 });
 
 test('messages and acknowledgements survive process storage reopen', async () => {
-  const folder = mkdtempSync(join(tmpdir(), 'agentpost-inbox-'));
+  const folder = mkdtempSync(join(tmpdir(), 'agentmail-inbox-'));
   const database = join(folder, 'inbox.sqlite');
   let app = await start(null, { database });
   try {

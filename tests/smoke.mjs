@@ -3,7 +3,7 @@ import { connect } from 'node:net';
 import { connect as tlsConnect } from 'node:tls';
 import { once } from 'node:events';
 import { readFileSync } from 'node:fs';
-import { AgentPost } from '../src/client.mjs';
+import { AgentMail } from '../src/client.mjs';
 
 class SMTP {
   constructor(socket) {
@@ -45,11 +45,11 @@ class SMTP {
   }
 }
 
-const rawKey = readFileSync('runtime/smoke-postal.txt', 'utf8').match(/AGENTPOST_TEST_KEY=(\S+)/)?.[1];
+const rawKey = readFileSync('runtime/smoke-postal.txt', 'utf8').match(/AGENTMAIL_TEST_KEY=(\S+)/)?.[1];
 assert.ok(rawKey, 'Postal fixture produced a key');
 const inboxKey = JSON.parse(readFileSync('runtime/smoke-inbox.json')).token;
-const sendClient = new AgentPost({ url: 'http://127.0.0.1:5000', sendKey: rawKey });
-const inbox = new AgentPost({ url: 'http://127.0.0.1:8025', inboxKey });
+const sendClient = new AgentMail({ url: 'http://127.0.0.1:5000', sendKey: rawKey });
+const inbox = new AgentMail({ url: 'http://127.0.0.1:8025', inboxKey });
 const sent = await sendClient.send({ from: 'assistant@inbound.example.com', to: ['developer@example.net'], subject: 'Held integration message', text: 'This should remain held in the test mail server.' });
 assert.ok(sent.message_id);
 assert.ok(sent.messages['developer@example.net'].id);

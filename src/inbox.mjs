@@ -147,6 +147,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     getConfig,
     onError: () => console.error('Inbox request failed; check storage and configuration.'),
   });
-  server.listen(Number(process.env.INBOX_PORT || 8025), process.env.INBOX_BIND || '127.0.0.1', () => console.log('AgentPost inbox ready'));
+  server.listen(Number(process.env.INBOX_PORT || 8025), process.env.INBOX_BIND || '127.0.0.1', () => console.log('AgentMail inbox ready'));
   for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => server.close(() => { db.close(); process.exit(0); }));
 }

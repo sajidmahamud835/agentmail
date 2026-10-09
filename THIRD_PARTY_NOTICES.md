@@ -1,6 +1,6 @@
 # Third-party notices
 
-AgentPost integrates these independently maintained components without claiming their authorship:
+AgentMail integrates these independently maintained components without claiming their authorship:
 
 | Component | Purpose | Upstream |
 |---|---|---|
@@ -11,6 +11,6 @@ AgentPost integrates these independently maintained components without claiming 
 | restic | Encrypted backups | https://restic.net/ |
 | YAML | Development-only YAML validation | https://github.com/eemeli/yaml |
 
-Upstream container images and packages retain their own licenses and notices. AgentPost's MIT license covers its original code and documentation, not a relicensing of these components.
+Upstream container images and packages retain their own licenses and notices. AgentMail's MIT license covers its original code and documentation, not a relicensing of these components.
 
 Mail configuration follows Postal's documented version-2 schema and pinned 3.3.7 source behavior. Links to upstream documentation and implementation are maintained in the relevant guides.

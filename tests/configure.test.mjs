@@ -7,7 +7,7 @@ import YAML from 'yaml';
 import { configure, manageInbox, readEnv } from '../scripts/configure.mjs';
 
 function fixture(t) {
-  const root = mkdtempSync(join(tmpdir(), 'agentpost-config-'));
+  const root = mkdtempSync(join(tmpdir(), 'agentmail-config-'));
   t.after(() => rmSync(root, { recursive: true }));
   writeFileSync(join(root, '.env'), 'MAIL_HOSTNAME=mail.example.com\nACME_EMAIL=admin@example.com\nPUBLIC_IPV4=203.0.113.10\n');
   return root;

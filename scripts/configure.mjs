@@ -105,7 +105,7 @@ smtp:
   port: 25
   username: ${q(env.ADMIN_SMTP_USERNAME || '')}
   password: ${q(env.ADMIN_SMTP_PASSWORD || '')}
-  from_name: AgentPost
+  from_name: AgentMail
   from_address: ${q(env.ADMIN_FROM_ADDRESS)}
   enable_starttls_auto: true
 rails:
@@ -170,7 +170,7 @@ export function manageInbox(root, command, id, address) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   try {
-    const root = process.env.AGENTPOST_ROOT || resolve(dirname(fileURLToPath(import.meta.url)), '..');
+    const root = process.env.AGENTMAIL_ROOT || resolve(dirname(fileURLToPath(import.meta.url)), '..');
     const [command = 'configure', ...args] = process.argv.slice(2);
     if (command === 'configure') { configure(root); console.log('Configuration generated; existing secrets preserved.'); }
     else if (command === 'get') {

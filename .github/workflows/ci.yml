@@ -33,7 +33,7 @@ jobs:
           sudo apt-get install -y restic jq
           sudo git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Exercise the mail stack and recovery
-        run: sudo env "PATH=$PATH" "RUNNER_TEMP=$RUNNER_TEMP" AGENTPOST_CI=true bash tests/integration.sh
+        run: sudo env "PATH=$PATH" "RUNNER_TEMP=$RUNNER_TEMP" AGENTMAIL_CI=true bash tests/integration.sh
       - name: Service diagnostics
         if: failure()
         run: |

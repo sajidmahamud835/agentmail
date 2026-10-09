@@ -26,7 +26,7 @@ Postal returns a JSON envelope with `status: "success"` or `status: "error"`. Ch
 
 The provided JavaScript client maps `text` to `plain_body`, `html` to `html_body`, and `replyTo` to `reply_to`. Attachment entries retain Postal's `name`, `content_type`, and base64 `data` fields.
 
-There is no server-side `Idempotency-Key` support in this release. A connection failure after submission can have an unknown outcome. Never blindly retry a send; use application outbox records and reconcile unknown attempts against Postal's logs. The client reports these as `AgentPostError` with `ambiguous: true`.
+There is no server-side `Idempotency-Key` support in this release. A connection failure after submission can have an unknown outcome. Never blindly retry a send; use application outbox records and reconcile unknown attempts against Postal's logs. The client reports these as `AgentMailError` with `ambiguous: true`.
 
 Use the Postal dashboard to configure per-server limits, suppressions, retention and outbound event webhooks. Do not give agents administrative credentials. API credentials follow Postal's own authorization model; an inbox token does not grant sending access.
 
@@ -65,7 +65,7 @@ await mail.send({
 });
 ```
 
-Use the incoming message's RFC Message-ID, preserving valid angle-bracket formatting; it is different from AgentPost's numeric storage ID. Avoid automatic replies to bounces, auto-submitted messages, and bulk/list mail. Enforce reply limits and recipient policies in the agent application.
+Use the incoming message's RFC Message-ID, preserving valid angle-bracket formatting; it is different from AgentMail's numeric storage ID. Avoid automatic replies to bounces, auto-submitted messages, and bulk/list mail. Enforce reply limits and recipient policies in the agent application.
 
 ## Internal delivery
 

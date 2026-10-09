@@ -1,8 +1,8 @@
-# AgentPost
+# AgentMail
 
 Email infrastructure for private AI agents and developers. Run a mail API, delivery dashboard, SMTP receiver, and agent inboxes on one server.
 
-AgentPost packages [Postal](https://github.com/postalserver/postal) with a small authenticated inbox service and operational tooling. Postal supplies the administration dashboard and mail delivery engine. AgentPost adds per-inbox access tokens, durable polling, and deployment scripts. The repository is private; it follows a conventional contributor-friendly layout.
+AgentMail packages [Postal](https://github.com/postalserver/postal) with a small authenticated inbox service and operational tooling. Postal supplies the administration dashboard and mail delivery engine. AgentMail adds per-inbox access tokens, durable polling, and deployment scripts.
 
 ## What works in this release
 
@@ -29,11 +29,12 @@ Check your provider's email policy and port-25 availability before provisioning.
 
 ## Deploy
 
-Clone this private repository using your authorized Git access, into `/opt/agentpost`. Never put an access token into the clone URL or shell history.
+Clone the repository into `/opt/agentmail`:
 
 ```bash
-cd /opt/agentpost
-cp .env.example .env
+sudo git clone https://github.com/sajidmahamud835/agentmail.git /opt/agentmail
+cd /opt/agentmail
+sudo cp .env.example .env
 sudo nano .env
 sudo bash scripts/install.sh
 sudo bash scripts/admin.sh
@@ -50,11 +51,11 @@ The installation uses pinned container tags and Docker's official Ubuntu reposit
 Copy `src/client.mjs` into your application, or import it from a checkout. No runtime npm dependencies are needed.
 
 ```js
-import { AgentPost } from './src/client.mjs';
+import { AgentMail } from './src/client.mjs';
 
-const mail = new AgentPost({
+const mail = new AgentMail({
   url: 'https://mail.example.com',
-  sendKey: process.env.AGENTPOST_SEND_KEY,
+  sendKey: process.env.AGENTMAIL_SEND_KEY,
 });
 
 const result = await mail.send({
@@ -87,9 +88,9 @@ In the Postal dashboard:
 The endpoint is internal to the server. The inbox service verifies Postal's RSA-SHA256 signature before storing the original processed payload. Caddy blocks public access to `/postal/*`.
 
 ```js
-const inbox = new AgentPost({
+const inbox = new AgentMail({
   url: 'https://mail.example.com',
-  inboxKey: process.env.AGENTPOST_INBOX_KEY,
+  inboxKey: process.env.AGENTMAIL_INBOX_KEY,
 });
 
 const page = await inbox.messages({ unacked: true });
@@ -100,7 +101,7 @@ for (const summary of page.data) {
 }
 ```
 
-Read [the API guide](docs/api.md) for pagination, attachments, replies, and retry semantics. Inbox acknowledgement does not delete mail. AgentPost does not run tools, execute attachments, or follow instructions from incoming messages.
+Read [the API guide](docs/api.md) for pagination, attachments, replies, and retry semantics. Inbox acknowledgement does not delete mail. AgentMail does not run tools, execute attachments, or follow instructions from incoming messages.
 
 ## Operate
 
@@ -129,4 +130,4 @@ See [verification status](docs/verification.md), [architecture](docs/architectur
 
 ## License
 
-AgentPost-authored code is MIT licensed. Its repository remains private unless its owner changes visibility. Postal, Caddy, MariaDB, Node.js, and restic retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.md).
+AgentMail-authored code is MIT licensed. Postal, Caddy, MariaDB, Node.js, and restic retain their own licenses; see [third-party notices](THIRD_PARTY_NOTICES.md).

@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { AgentPost } from '../src/client.mjs';
+import { AgentMail } from '../src/client.mjs';
 
 test('client maps outgoing payload to Postal and returns queued message identifiers', async () => {
   let request;
-  const client = new AgentPost({ url: 'https://mail.example.com', sendKey: 'send-secret', fetch: async (url, options) => {
+  const client = new AgentMail({ url: 'https://mail.example.com', sendKey: 'send-secret', fetch: async (url, options) => {
     request = { url, ...options };
     return Response.json({ status: 'success', data: { message_id: 'example@id', messages: { 'a@example.net': { id: 1 } } } });
   } });
@@ -18,18 +18,18 @@ test('client maps outgoing payload to Postal and returns queued message identifi
 });
 
 test('API-level errors are errors even when HTTP status is 200', async () => {
-  const client = new AgentPost({ url: 'https://mail.example.com', sendKey: 'key', fetch: async () => Response.json({ status: 'error', data: { code: 'UnauthenticatedFromAddress', message: 'Sender is not verified' } }) });
+  const client = new AgentMail({ url: 'https://mail.example.com', sendKey: 'key', fetch: async () => Response.json({ status: 'error', data: { code: 'UnauthenticatedFromAddress', message: 'Sender is not verified' } }) });
   await assert.rejects(client.send({ from: 'a@example.com', to: ['b@example.com'], subject: 'Hi', text: 'Hi' }), error => error.code === 'UnauthenticatedFromAddress');
 });
 
 test('network send failure is ambiguous and never automatically retried', async () => {
   let calls = 0;
-  const client = new AgentPost({ url: 'https://mail.example.com', sendKey: 'key', fetch: async () => { calls++; throw new Error('Network lost'); } });
+  const client = new AgentMail({ url: 'https://mail.example.com', sendKey: 'key', fetch: async () => { calls++; throw new Error('Network lost'); } });
   await assert.rejects(client.send({ from: 'a@example.com', to: ['b@example.com'], subject: 'Hi', text: 'Hi' }), error => error.ambiguous === true);
   assert.equal(calls, 1);
 });
 
 test('client rejects remote plain HTTP and credential-bearing origins', () => {
-  assert.throws(() => new AgentPost({ url: 'http://mail.example.com' }), /HTTPS/);
-  assert.throws(() => new AgentPost({ url: 'https://user:secret@mail.example.com' }), /origin/);
+  assert.throws(() => new AgentMail({ url: 'http://mail.example.com' }), /HTTPS/);
+  assert.throws(() => new AgentMail({ url: 'https://user:secret@mail.example.com' }), /origin/);
 });

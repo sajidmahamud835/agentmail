@@ -1,14 +1,14 @@
-export class AgentPostError extends Error {
+export class AgentMailError extends Error {
   constructor(message, { status, code, ambiguous = false } = {}) {
     super(message);
-    this.name = 'AgentPostError';
+    this.name = 'AgentMailError';
     this.status = status;
     this.code = code;
     this.ambiguous = ambiguous;
   }
 }
 
-export class AgentPost {
+export class AgentMail {
   constructor({ url, sendKey, inboxKey, timeout = 30_000, fetch: request = globalThis.fetch }) {
     const parsed = new URL(url);
     if (parsed.protocol !== 'https:' && !(parsed.protocol === 'http:' && ['127.0.0.1', 'localhost'].includes(parsed.hostname))) throw new Error('HTTPS required');
@@ -33,13 +33,13 @@ export class AgentPost {
         redirect: 'error',
       });
     } catch {
-      throw new AgentPostError('Send outcome unknown. Inspect mail logs before retrying.', { ambiguous: true });
+      throw new AgentMailError('Send outcome unknown. Inspect mail logs before retrying.', { ambiguous: true });
     }
     let result;
     try { result = await response.json(); } catch {
-      throw new AgentPostError('Unreadable send response. Inspect mail logs before retrying.', { status: response.status, ambiguous: true });
+      throw new AgentMailError('Unreadable send response. Inspect mail logs before retrying.', { status: response.status, ambiguous: true });
     }
-    if (!response.ok || result.status !== 'success') throw new AgentPostError(result.data?.message || 'Mail submission failed', { status: response.status, code: result.data?.code, ambiguous: response.status >= 500 });
+    if (!response.ok || result.status !== 'success') throw new AgentMailError(result.data?.message || 'Mail submission failed', { status: response.status, code: result.data?.code, ambiguous: response.status >= 500 });
     return result.data;
   }
 
@@ -50,7 +50,7 @@ export class AgentPost {
       signal: AbortSignal.timeout(this.timeout), redirect: 'error',
     });
     const result = await response.json();
-    if (!response.ok) throw new AgentPostError(result.error || 'Inbox request failed', { status: response.status });
+    if (!response.ok) throw new AgentMailError(result.error || 'Inbox request failed', { status: response.status });
     return result;
   }
 

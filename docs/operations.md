@@ -7,13 +7,13 @@ Run commands from the repository directory as an administrator. Secrets and mail
 ```bash
 sudo bash scripts/status.sh
 sudo docker compose logs --tail=100 smtp worker inbox
-sudo systemctl list-timers 'agentpost-*'
-sudo journalctl -u agentpost-health.service --since today
+sudo systemctl list-timers 'agentmail-*'
+sudo journalctl -u agentmail-health.service --since today
 ```
 
 Containers restart after crashes and reboots. Docker logs rotate at 10 MB with three retained files per service. Five-minute health checks test the dashboard, SMTP, worker, inbox, disk usage, certificate expiry, and backup age when configured. Docker's `unhealthy` status alone does not restart a process; inspect and repair a degraded service.
 
-Install an executable `/etc/agentpost/alert` if you want failed health checks delivered to an external alert system. It receives a short problem string as its first argument. Keep it root-owned and avoid putting secrets into output. Also use an external uptime monitor for whole-server outages.
+Install an executable `/etc/agentmail/alert` if you want failed health checks delivered to an external alert system. It receives a short problem string as its first argument. Keep it root-owned and avoid putting secrets into output. Also use an external uptime monitor for whole-server outages.
 
 ## Credentials and administrative email
 
@@ -31,7 +31,7 @@ After creating a Postal SMTP credential for administrative email, set `ADMIN_SMT
 
 ```bash
 sudo docker run --rm --network none -v "$PWD:/work" -w /work \
-  -e AGENTPOST_ROOT=/work node:22.23.3-bookworm-slim node scripts/configure.mjs
+  -e AGENTMAIL_ROOT=/work node:22.23.3-bookworm-slim node scripts/configure.mjs
 sudo docker compose restart web worker
 ```
 
@@ -43,13 +43,13 @@ Caddy obtains and renews HTTPS certificates. A timer checks every six hours for 
 
 ## Backups
 
-AgentPost uses restic for authenticated encryption. Provision an off-server restic backend (SFTP, S3-compatible storage, or another supported repository) and keep its credentials and encryption password available independently of the mail server. Local-only backups do not protect against disk or server loss.
+AgentMail uses restic for authenticated encryption. Provision an off-server restic backend (SFTP, S3-compatible storage, or another supported repository) and keep its credentials and encryption password available independently of the mail server. Local-only backups do not protect against disk or server loss.
 
-Create `/etc/agentpost/restic-password` with a long random password and mode `0600`. Create `/etc/agentpost/backup.env` with mode `0600`:
+Create `/etc/agentmail/restic-password` with a long random password and mode `0600`. Create `/etc/agentmail/backup.env` with mode `0600`:
 
 ```dotenv
-RESTIC_REPOSITORY=s3:https://storage.example.net/agentpost-backups
-RESTIC_PASSWORD_FILE=/etc/agentpost/restic-password
+RESTIC_REPOSITORY=s3:https://storage.example.net/agentmail-backups
+RESTIC_PASSWORD_FILE=/etc/agentmail/restic-password
 AWS_ACCESS_KEY_ID=YOUR_STORAGE_ACCESS_KEY
 AWS_SECRET_ACCESS_KEY=YOUR_STORAGE_SECRET_KEY
 ```
@@ -58,10 +58,10 @@ This file follows systemd `EnvironmentFile` syntax. Initialize the repository an
 
 ```bash
 sudo systemd-run --wait --pipe --collect \
-  -p EnvironmentFile=/etc/agentpost/backup.env /usr/bin/restic init
+  -p EnvironmentFile=/etc/agentmail/backup.env /usr/bin/restic init
 sudo bash scripts/install-timers.sh
-sudo systemctl start agentpost-backup.service
-sudo journalctl -u agentpost-backup.service --no-pager
+sudo systemctl start agentmail-backup.service
+sudo journalctl -u agentmail-backup.service --no-pager
 ```
 
 Backups run daily at 03:00 server time. The script briefly stops mail writers, takes a complete MariaDB SQL dump and consistent inbox SQLite copy, and resumes services before uploading. This means a brief planned delivery/API interruption; sending applications should handle downtime and ambiguous send outcomes. SMTP peers normally retry temporary connection failures.
@@ -80,7 +80,7 @@ No recovery points are automatically removed. Configure restic retention after c
 
 ```bash
 sudo bash scripts/restore.sh \
-  /root/recovery/opt/agentpost/runtime/backup-stage --fresh-server
+  /root/recovery/opt/agentmail/runtime/backup-stage --fresh-server
 ```
 
 6. Restore backup credentials separately, point A/PTR records to the replacement server if needed, and check DNS, HTTPS, SMTP STARTTLS, inbox history, send credentials, and a real send/reply exchange.
@@ -95,8 +95,8 @@ Fetch and review a release/commit. Configure the backup environment for the upda
 ```bash
 git fetch origin
 sudo systemd-run --wait --pipe --collect \
-  -p EnvironmentFile=/etc/agentpost/backup.env \
-  /usr/bin/bash /opt/agentpost/scripts/update.sh REVIEWED_COMMIT
+  -p EnvironmentFile=/etc/agentmail/backup.env \
+  /usr/bin/bash /opt/agentmail/scripts/update.sh REVIEWED_COMMIT
 ```
 
 The script backs up first, stops writers, checks out the target, pulls pinned images, runs Postal migrations and starts services. It does not automatically pull arbitrary upstream changes. A failed migration leaves services stopped for investigation. Reverting Git is not a database downgrade: recover the pre-update snapshot on a fresh instance if a migration must be undone. Review MariaDB major-version changes separately; the helper is intended for compatible application releases.

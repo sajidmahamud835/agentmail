@@ -1,4 +1,4 @@
-name: agentpost
+name: agentmail
 
 x-logging: &logging
   driver: json-file

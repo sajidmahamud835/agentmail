@@ -1,5 +1,5 @@
 # Test-only fixture. Never run against a production database.
-abort "Disposable CI database only" unless ENV["AGENTPOST_CI"] == "true"
+abort "Disposable CI database only" unless ENV["AGENTMAIL_CI"] == "true"
 
 user = User.create!(first_name: "Test", last_name: "Operator", email_address: "operator@example.com",
                     password: SecureRandom.hex(32), email_verified_at: Time.now, admin: true)
@@ -10,4 +10,4 @@ endpoint = HTTPEndpoint.create!(server: server, name: "Agent inbox", url: "http:
                                 encoding: "BodyAsJSON", format: "Hash", include_attachments: true, timeout: 5)
 Route.create!(server: server, domain: domain, name: "assistant", mode: "Endpoint", spam_mode: "Mark", endpoint: endpoint)
 credential = Credential.create!(server: server, name: "Held test send", type: "API", hold: true)
-puts "AGENTPOST_TEST_KEY=#{credential.key}"
+puts "AGENTMAIL_TEST_KEY=#{credential.key}"

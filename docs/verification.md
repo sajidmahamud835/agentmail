@@ -5,7 +5,7 @@ Initial implementation verification, 2026-10-09:
 - Local Node tests pass: client request/error behavior; inbox credential isolation, signature rejection, deduplication, pagination, acknowledgement, storage persistence and retryable failures; configuration and credential preservation.
 - JavaScript syntax, YAML parsing, ShellCheck and actionlint validation pass.
 - The dependency audit reports no known vulnerabilities in the development dependency tree.
-- The repository is private and runtime data/secrets are excluded from version control.
+- Runtime data and secrets are excluded from version control.
 
 The Linux container integration check is implemented in `tests/integration.sh` and wired into CI. GitHub Actions returned `startup_failure` before allocating any jobs, including a manual dispatch. No runner logs were created. The current development machine has no Docker engine, so **the actual container startup, SMTP exchange and backup/restore integration have not yet been executed**.
 

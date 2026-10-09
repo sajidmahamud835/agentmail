@@ -17,7 +17,7 @@ flowchart LR
 
 All services live on one Linux machine. Mail-facing components use host networking, consistent with Postal's upstream deployment pattern; the database publishes only to loopback. Web, agent inbox and metrics listeners also bind to loopback. Only SMTP 25 and Caddy 80/443 need internet ingress. SSH should be restricted by the operator.
 
-Postal remains the authority for domains, sending credentials, outbound delivery attempts and delivery events. It provisions one message database per mail server. AgentPost's database user is restricted to `postal` and `postal-*` databases rather than having global database administrator access.
+Postal remains the authority for domains, sending credentials, outbound delivery attempts and delivery events. It provisions one message database per mail server. AgentMail's database user is restricted to `postal` and `postal-*` databases rather than having global database administrator access.
 
 The inbox service has no runtime third-party packages. It uses Node's HTTP, crypto and SQLite APIs. Each configured inbox has a unique ID, explicit addresses and a SHA-256 bearer-token hash. Raw tokens are generated with 256 bits of randomness and only displayed when created/rotated.
 

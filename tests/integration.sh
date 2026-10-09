@@ -3,7 +3,7 @@ set -Eeuo pipefail
 # shellcheck source=scripts/common.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../scripts/common.sh"
 need_root
-[[ ${AGENTPOST_CI:-} == true ]] || fail 'Only run with AGENTPOST_CI=true on a disposable Linux CI host.'
+[[ ${AGENTMAIL_CI:-} == true ]] || fail 'Only run with AGENTMAIL_CI=true on a disposable Linux CI host.'
 [[ ! -e .env && ! -e runtime/database ]] || fail 'Integration test requires a clean checkout.'
 cp .env.example .env
 node scripts/configure.mjs
@@ -21,7 +21,7 @@ sed -i '/^mail.example.com {/a\  tls internal' runtime/Caddyfile
 "${COMPOSE[@]}" run --rm runner postal initialize
 touch runtime/initialized
 install -o 999 -g 999 -m 640 tests/fixtures/postal.rb runtime/postal/smoke.rb
-"${COMPOSE[@]}" run --rm -e AGENTPOST_CI=true runner bundle exec rails runner /config/smoke.rb > runtime/smoke-postal.txt
+"${COMPOSE[@]}" run --rm -e AGENTMAIL_CI=true runner bundle exec rails runner /config/smoke.rb > runtime/smoke-postal.txt
 "${COMPOSE[@]}" up -d --wait web worker inbox smtp caddy
 for port in 9090 9091; do
   curl --retry 20 --retry-connrefused --retry-delay 1 -fsS "http://127.0.0.1:$port/health" >/dev/null
@@ -30,8 +30,8 @@ curl --retry 20 --retry-connrefused --retry-delay 1 --resolve mail.example.com:4
 [[ $(curl --resolve mail.example.com:443:127.0.0.1 -ks -o /dev/null -w '%{http_code}' https://mail.example.com/postal/inbound) == 404 ]]
 node tests/smoke.mjs
 
-export RESTIC_REPOSITORY="$RUNNER_TEMP/agentpost-restic"
-export RESTIC_PASSWORD_FILE="$RUNNER_TEMP/agentpost-restic-password"
+export RESTIC_REPOSITORY="$RUNNER_TEMP/agentmail-restic"
+export RESTIC_PASSWORD_FILE="$RUNNER_TEMP/agentmail-restic-password"
 openssl rand -hex 32 > "$RESTIC_PASSWORD_FILE"
 chmod 600 "$RESTIC_PASSWORD_FILE"
 restic init
@@ -44,7 +44,7 @@ bundle="$RUNNER_TEMP/recovery$ROOT/runtime/backup-stage"
 "${COMPOSE[@]}" down
 
 # Restore into a different, empty checkout, exercising the real recovery script.
-fresh="$RUNNER_TEMP/agentpost-restored"
+fresh="$RUNNER_TEMP/agentmail-restored"
 git clone --no-hardlinks "$ROOT" "$fresh"
 git -C "$fresh" checkout "$(cat "$bundle/commit")"
 bash "$fresh/scripts/restore.sh" "$bundle" --fresh-server
