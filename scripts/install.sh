@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+# shellcheck source=scripts/common.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/common.sh"
 need_root
 [[ $(uname -s) == Linux ]] || fail 'Use a dedicated Ubuntu 24.04 x86_64 server.'

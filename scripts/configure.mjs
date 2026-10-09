@@ -40,7 +40,9 @@ export function configure(root) {
   if (!/^[A-Za-z0-9._+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(env.ACME_EMAIL || '')) throw new Error('ACME_EMAIL must be an email address');
   if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(env.PUBLIC_IPV4 || '') || env.PUBLIC_IPV4.split('.').some(part => Number(part) > 255)) throw new Error('PUBLIC_IPV4 must be an IPv4 address');
   if (!['true', 'false'].includes(env.SMTP_TLS_ENABLED || 'false')) throw new Error('Invalid SMTP_TLS_ENABLED');
+  const existingInstallation = existsSync(resolve(root, 'runtime/initialized')) || existsSync(resolve(root, 'runtime/database'));
   for (const [key, length] of [['DB_ROOT_PASSWORD', 32], ['DB_POSTAL_PASSWORD', 32], ['RAILS_SECRET_KEY', 64]]) {
+    if (!env[key] && existingInstallation) throw new Error(`${key} is missing on an existing installation; recover the original .env from backup`);
     env[key] ||= secret(length);
     if (!/^[a-f0-9]{64,}$/.test(env[key])) throw new Error(`${key} must be at least 64 lowercase hex characters`);
   }
@@ -53,6 +55,7 @@ export function configure(root) {
   }
   const keyFile = resolve(root, 'runtime/postal/signing.key');
   if (!existsSync(keyFile)) {
+    if (existingInstallation) throw new Error('Signing key is missing on an existing installation; restore it from backup');
     const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048, privateKeyEncoding: { type: 'pkcs1', format: 'pem' }, publicKeyEncoding: { type: 'spki', format: 'pem' } });
     atomicWrite(keyFile, privateKey, 0o640, 999);
   }

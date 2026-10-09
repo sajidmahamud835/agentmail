@@ -50,3 +50,12 @@ test('inbox management prevents duplicates, rotates and revokes credentials', t 
   assert.equal(manageInbox(root, 'revoke', 'assistant').revoked, true);
   assert.throws(() => manageInbox(root, 'rotate', 'assistant'));
 });
+
+test('existing installations never silently regenerate lost credentials', t => {
+  const root = fixture(t);
+  configure(root);
+  writeFileSync(join(root, 'runtime/initialized'), '');
+  const env = readFileSync(join(root, '.env'), 'utf8').replace(/^DB_POSTAL_PASSWORD=.*$/m, 'DB_POSTAL_PASSWORD=');
+  writeFileSync(join(root, '.env'), env);
+  assert.throws(() => configure(root), /recover the original/);
+});

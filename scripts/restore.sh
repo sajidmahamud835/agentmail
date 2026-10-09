@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+# shellcheck source=scripts/common.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/common.sh"
 need_root
 [[ $# -eq 2 && $2 == --fresh-server ]] || fail 'Usage: restore.sh /absolute/path/to/backup-stage --fresh-server'
@@ -20,6 +21,8 @@ docker pull "$NODE_IMAGE"
 config configure
 cp "$bundle/config/Caddyfile" runtime/Caddyfile
 "${COMPOSE[@]}" up -d --wait database
+# The password is expanded inside the database container.
+# shellcheck disable=SC2016
 "${COMPOSE[@]}" exec -T database sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" mariadb -uroot' < "$bundle/database.sql"
 touch runtime/initialized
 "${COMPOSE[@]}" up -d web worker inbox caddy smtp

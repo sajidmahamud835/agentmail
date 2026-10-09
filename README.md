@@ -125,7 +125,7 @@ npm run check
 
 CI tests inbox authorization, signature rejection, duplicate deliveries, crash persistence, failure responses, configuration generation, and the client contract. A Linux integration job initializes the actual mail stack, exercises SMTP receiving and API sending, and checks backup/restore. These checks do not measure real-world inbox placement.
 
-See [architecture](docs/architecture.md), [contributing](CONTRIBUTING.md), and [security](SECURITY.md).
+See [verification status](docs/verification.md), [architecture](docs/architecture.md), [contributing](CONTRIBUTING.md), and [security](SECURITY.md).
 
 ## License
 

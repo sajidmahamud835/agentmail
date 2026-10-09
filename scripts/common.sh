@@ -4,6 +4,8 @@ set -Eeuo pipefail
 ROOT=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 export ROOT
 cd "$ROOT"
+# Used by scripts sourcing this file.
+# shellcheck disable=SC2034
 COMPOSE=(docker compose --project-directory "$ROOT" --env-file "$ROOT/.env" -f "$ROOT/compose.yaml")
 NODE_IMAGE=node:22.23.3-bookworm-slim
 fail() { printf 'Error: %s\n' "$*" >&2; exit 1; }

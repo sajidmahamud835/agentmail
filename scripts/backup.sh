@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+# shellcheck source=scripts/common.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/common.sh"
 need_root
 lock_operation
@@ -25,6 +26,7 @@ if [[ -n $running ]]; then
   "${COMPOSE[@]}" stop -t 60 "${services[@]}"
 fi
 # All writers are stopped. Credentials are expanded inside the container, not logged.
+# shellcheck disable=SC2016
 "${COMPOSE[@]}" exec -T database sh -c 'MYSQL_PWD="$MARIADB_ROOT_PASSWORD" mariadb-dump -uroot --all-databases --single-transaction --routines --events --triggers' > "$stage/database.sql"
 cp .env "$stage/config/environment"
 cp compose.yaml "$stage/config/compose.yaml"

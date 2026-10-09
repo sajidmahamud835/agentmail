@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
+# shellcheck source=scripts/common.sh
 source "$(dirname -- "${BASH_SOURCE[0]}")/../scripts/common.sh"
 need_root
 [[ ${AGENTPOST_CI:-} == true ]] || fail 'Only run with AGENTPOST_CI=true on a disposable Linux CI host.'
@@ -47,7 +48,7 @@ fresh="$RUNNER_TEMP/agentpost-restored"
 git clone --no-hardlinks "$ROOT" "$fresh"
 git -C "$fresh" checkout "$(cat "$bundle/commit")"
 bash "$fresh/scripts/restore.sh" "$bundle" --fresh-server
-for attempt in {1..30}; do
+for ((attempt=0; attempt<30; attempt++)); do
   if curl -fsS http://127.0.0.1:8025/health >/dev/null; then break; fi
   sleep 2
 done
